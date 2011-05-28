@@ -8,7 +8,6 @@ import org.rsbot.security.RestrictedSecurityManager;
 import org.rsbot.util.ApplicationException;
 import org.rsbot.util.io.IOHelper;
 
-
 import javax.swing.*;
 
 import java.awt.*;
@@ -33,7 +32,6 @@ public class Application {
 			System.setProperty("java.io.tmpdir", Configuration.Paths.getGarbageDirectory());
 			gui = new BotGUI();
 			gui.setVisible(true);
-			
 		} catch (final Exception e) {
 			e.printStackTrace();
 			System.out.print(e.getMessage());

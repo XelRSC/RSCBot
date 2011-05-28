@@ -14,7 +14,6 @@ import org.rsbot.script.wrappers.*;
  */
 @ScriptManifest(authors = {"Pwnaz0r", "Taha", "zqqou", "Zach"}, name = "FreakyForester", version = 2.6)
 public class FreakyForester extends Random implements MessageListener {
-
 	private RSNPC forester;
 	private static final int FORESTER_ID = 2458;
 	private static final int SEARCH_INTERFACE_ID = 242;
@@ -203,8 +202,8 @@ public class FreakyForester extends Random implements MessageListener {
 		}
 		 */
 		if (unequip && inventory.getCount(false) != 28) {
-			if (game.getCurrentTab() != Game.TAB_EQUIPMENT) {
-				game.openTab(Game.TAB_EQUIPMENT);
+			if (game.getTab() != Game.Tab.EQUIPMENT) {
+				game.openTab(Game.Tab.EQUIPMENT);
 				sleep(random(1000, 1500));
 				interfaces.get(Equipment.INTERFACE_EQUIPMENT).getComponent(17).doClick();
 				return random(1000, 1500);
@@ -325,7 +324,5 @@ public class FreakyForester extends Random implements MessageListener {
 		if (serverString.contains("no ammo left")) {
 			unequip = true;
 		}
-
 	}
-
 }

@@ -5,6 +5,7 @@ import org.rsbot.bot.Bot;
 import org.rsbot.event.impl.*;
 import org.rsbot.event.listeners.PaintListener;
 import org.rsbot.event.listeners.TextPaintListener;
+import org.rsbot.gui.component.Messages;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +24,8 @@ public class BotMenuBar extends JMenuBar {
 	public static final String[] TITLES;
 	public static final String[][] ELEMENTS;
 
-	private static final String[] DEVELOPER_CHECK_FEATURES = {"Game State", "Current Tab", "Camera", "Floor Height",
+	private static final boolean EXTD_VIEW_INITIAL = !Configuration.RUNNING_FROM_JAR;
+	private static final String[] EXTD_VIEW_ITEMS = {"Game State", "Current Tab", "Camera", "Floor Height",
 			"Mouse Position", "User Input Allowed", "Menu", "Menu Actions", "Cache", "Models", "Calc Test", "Settings"};
 
 	static {
@@ -59,7 +61,7 @@ public class BotMenuBar extends JMenuBar {
 		TITLES = new String[]{Messages.FILE, Messages.EDIT, Messages.VIEW, Messages.TOOLS, Messages.HELP};
 		ELEMENTS = new String[][]{
 				{Messages.NEWBOT, Messages.CLOSEBOT, Messages.MENUSEPERATOR,
-						Messages.SERVICEKEY, Messages.ADDSCRIPT,
+						Messages.ADDSCRIPT,
 						Messages.RUNSCRIPT, Messages.STOPSCRIPT,
 						Messages.PAUSESCRIPT, Messages.MENUSEPERATOR,
 						Messages.SAVESCREENSHOT, Messages.MENUSEPERATOR,
@@ -67,10 +69,11 @@ public class BotMenuBar extends JMenuBar {
 				{Messages.ACCOUNTS, Messages.MENUSEPERATOR,
 						Messages.TOGGLEFALSE + Messages.FORCEINPUT,
 						Messages.TOGGLEFALSE + Messages.LESSCPU,
+						(EXTD_VIEW_INITIAL ? Messages.TOGGLETRUE : Messages.TOGGLEFALSE) + Messages.EXTDVIEWS,
 						Messages.MENUSEPERATOR,
 						Messages.TOGGLEFALSE + Messages.DISABLEANTIRANDOMS,
 						Messages.TOGGLEFALSE + Messages.DISABLEAUTOLOGIN},
-				constructDebugs(), {Messages.OPTIONS}, {Messages.SITE, Messages.PROJECT, Messages.ABOUT}};
+				constructDebugs(), {Messages.CLEARCACHE, Messages.OPTIONS}, {Messages.SITE, Messages.PROJECT, Messages.ABOUT}};
 	}
 
 	private static String[] constructDebugs() {
@@ -112,7 +115,6 @@ public class BotMenuBar extends JMenuBar {
 		final HashMap<String, String> map = new HashMap<String, String>(16);
 		map.put(Messages.NEWBOT, Configuration.Paths.Resources.ICON_APPADD);
 		map.put(Messages.CLOSEBOT, Configuration.Paths.Resources.ICON_APPDELETE);
-		map.put(Messages.SERVICEKEY, Configuration.Paths.Resources.ICON_KEY);
 		map.put(Messages.ADDSCRIPT, Configuration.Paths.Resources.ICON_SCRIPT_ADD);
 		map.put(Messages.RUNSCRIPT, Configuration.Paths.Resources.ICON_PLAY);
 		map.put(Messages.STOPSCRIPT, Configuration.Paths.Resources.ICON_DELETE);
@@ -121,6 +123,7 @@ public class BotMenuBar extends JMenuBar {
 		map.put(Messages.HIDEBOT, Configuration.Paths.Resources.ICON_ARROWIN);
 		map.put(Messages.EXIT, Configuration.Paths.Resources.ICON_CLOSE);
 		map.put(Messages.ACCOUNTS, Configuration.Paths.Resources.ICON_REPORTKEY);
+		map.put(Messages.CLEARCACHE, Configuration.Paths.Resources.DATABASE_ERROR);
 		map.put(Messages.OPTIONS, Configuration.Paths.Resources.ICON_WRENCH);
 		map.put(Messages.SITE, Configuration.Paths.Resources.ICON_WEBLINK);
 		map.put(Messages.PROJECT, Configuration.Paths.Resources.ICON_GITHUB);
@@ -144,13 +147,14 @@ public class BotMenuBar extends JMenuBar {
 			add(constructMenu(title, elems));
 		}
 		constructItemIcons();
-		commandMenuItem.get(Messages.SERVICEKEY).setVisible(false);
 		commandMenuItem.get(Messages.HIDEBOT).setVisible(SystemTray.isSupported());
-		if (Configuration.RUNNING_FROM_JAR) {
-			for (String disableFeature : DEVELOPER_CHECK_FEATURES) {
-				if (commandCheckMap.containsKey(disableFeature)) {
-					commandCheckMap.get(disableFeature).setVisible(false);
-				}
+		setExtendedView(EXTD_VIEW_INITIAL);
+	}
+
+	public void setExtendedView(final boolean show) {
+		for (String disableFeature : EXTD_VIEW_ITEMS) {
+			if (commandCheckMap.containsKey(disableFeature)) {
+				commandCheckMap.get(disableFeature).setVisible(show);
 			}
 		}
 	}

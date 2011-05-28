@@ -7,7 +7,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 
-
 /**
  * @author Jacmob
  * @author Paris
@@ -77,7 +76,7 @@ public class BotHome {
 		final FontMetrics metrics = g.getFontMetrics(FONT);
 		g.setColor(new Color(0, 0, 0, 170));
 		g.fillRect(0, height - 30, width, 30);
-		g.setColor(Color.MAGENTA);
+		g.setColor(Color.white);
 		g.drawString("Spectating " + (bots.length == 1 ? "1 bot." : bots.length + " bots."), 5, height + metrics.getDescent() - 14);
 	}
 
@@ -96,7 +95,7 @@ public class BotHome {
 				h = (int) ((float) h_img / (float) w_img * w);
 			}
 			g.drawImage(img.getScaledInstance(w, h, Image.SCALE_SMOOTH), x + width / 2 - w / 2, y + height / 2 - h / 2, null);
-			g.setColor(Color.MAGENTA);
+			g.setColor(Color.gray);
 			g.drawRect(x, y, width - 1, height - 1);
 		}
 	}

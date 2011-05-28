@@ -1,5 +1,4 @@
 Main-Class: org.rsbot.Boot
-Class-Path: lib/xel.jar
 
 Name: org/rsbot
 Sealed: true
