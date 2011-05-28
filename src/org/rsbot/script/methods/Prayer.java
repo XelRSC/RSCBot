@@ -261,8 +261,10 @@ public class Prayer extends MethodProvider {
 			if (methods.skills.getRealLevel(Skills.PRAYER) < pray.getRequiredLevel()) {
 				return false;
 			}
-			methods.game.openTab(Game.Tab.PRAYER);
-			if (methods.game.getTab() == Game.Tab.PRAYER) {
+			if (methods.game.getCurrentTab() != Game.TAB_PRAYER) {
+				methods.game.openTab(Game.TAB_PRAYER);
+			}
+			if (methods.game.getCurrentTab() == Game.TAB_PRAYER) {
 				RSComponent component = methods.interfaces.getComponent(PRAYER_INTERFACE, 7)
 						.getComponent(pray.getComponentIndex());
 				if (component.isValid()) {

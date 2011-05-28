@@ -7,12 +7,6 @@ import org.rsbot.script.wrappers.RSInterface;
 import org.rsbot.script.wrappers.RSItem;
 import org.rsbot.script.wrappers.RSTile;
 
-/**
- * The class that handles all teleportation actions via jewelry transportation.
- *
- * @author Timer
- * @author kyleshay
- */
 public class TeleportJewelry extends TeleportItem {
 	public TeleportJewelry(MethodContext ctx, RSTile teleportationLocation, String[] action, int[] itemIDs) {
 		super(ctx, teleportationLocation, action, itemIDs);
@@ -20,10 +14,6 @@ public class TeleportJewelry extends TeleportItem {
 
 	public TeleportJewelry(MethodContext ctx, RSTile teleportationLocation, String action, int[] itemIDs) {
 		super(ctx, teleportationLocation, action, itemIDs);
-	}
-
-	public boolean meetsPrerequisites() {
-		return !deepWilderness() /* && !teleportBlocked()*/;
 	}
 
 	/**
@@ -45,7 +35,11 @@ public class TeleportJewelry extends TeleportItem {
 				}
 			}
 		}
-		if (item != null && methods.game.openTab(equip ? Game.Tab.EQUIPMENT : Game.Tab.INVENTORY)) {
+		if (item != null) {
+			if (methods.game.getCurrentTab() != (equip ? Game.TAB_EQUIPMENT : Game.TAB_INVENTORY)) {
+				methods.game.openTab(equip ? Game.TAB_EQUIPMENT : Game.TAB_INVENTORY);
+				sleep(500);
+			}
 			for (String s : action) {
 				if (item.doAction(s)) {
 					final long tO = System.currentTimeMillis();
@@ -103,19 +97,5 @@ public class TeleportJewelry extends TeleportItem {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Jewelry restriction for wilderness is > 30 instead of 20.
-	 * confirmed for:
-	 * Amulet of glory
-	 * Combat bracelet
-	 * Skills necklace
-	 * Pharaoh's sceptre
-	 * Grand seed pod
-	 * Ring of Life
-	 */
-	private boolean deepWilderness() {
-		return methods.combat.getWildernessLevel() > 30;
 	}
 }

@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 /**
+ * @author Xel
  * @author Paris
  */
 public final class UpdateChecker {
@@ -32,7 +33,7 @@ public final class UpdateChecker {
 			return;
 		}
 		log.info("New version available");
-		final int update = JOptionPane.showConfirmDialog(instance, "A newer version is available. Do you wish to update?", "Update Found", JOptionPane.YES_NO_OPTION);
+		final int update = JOptionPane.showConfirmDialog(instance, "RSCBot is outdated, would you like to update?", "Update Found", JOptionPane.YES_NO_OPTION);
 		if (update != 0) {
 			return;
 		}
@@ -57,7 +58,7 @@ public final class UpdateChecker {
 		if (latest != -1 || error) {
 			return latest;
 		}
-		final File cache = new File(Configuration.Paths.getCacheDirectory(), "version-latest.txt");
+		final File cache = new File(Configuration.Paths.getCacheDirectory(), "0.23.txt");
 		BufferedReader reader = null;
 		try {
 			HttpClient.download(new URL(Configuration.Paths.URLs.VERSION), cache);
@@ -82,7 +83,7 @@ public final class UpdateChecker {
 
 	private static void update(final BotGUI instance) throws IOException {
 		log.info("Downloading update...");
-		final File jarNew = new File(Configuration.NAME + "-" + getLatestVersion() + ".jar");
+		final File jarNew = new File(Configuration.NAME + "-" + "0.23" + ".jar");
 		HttpClient.download(new URL(Configuration.Paths.URLs.DOWNLOAD), jarNew);
 		final String jarOld = Configuration.Paths.getRunningJarPath();
 		Runtime.getRuntime().exec("java -jar \"" + jarNew + "\" --delete \"" + jarOld + "\"");

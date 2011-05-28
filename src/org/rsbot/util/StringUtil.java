@@ -17,10 +17,6 @@ public class StringUtil {
 	private static final String[] COLOURS_STR = new String[]{"red", "green", "cyan", "purple", "white"};
 	private static final Map<String, Color> COLOR_MAP = new HashMap<String, Color>();
 
-	public static String stripHtml(final String s) {
-		return s.replaceAll("\\<.*?\\>", "");
-	}
-
 	public static String join(final String[] s) {
 		final int l = s.length;
 		switch (l) {

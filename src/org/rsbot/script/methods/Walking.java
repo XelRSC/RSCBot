@@ -11,6 +11,7 @@ import java.awt.*;
  * Walking related operations.
  */
 public class Walking extends MethodProvider {
+
 	public final int INTERFACE_RUN_ORB = 750;
 
 	Walking(final MethodContext ctx) {
@@ -273,7 +274,9 @@ public class Walking extends MethodProvider {
 		if (methods.client.getDestX() <= 0) {
 			return null;
 		}
-		return new RSTile(methods.client.getDestX() + methods.client.getBaseX(),	methods.client.getDestY() + methods.client.getBaseY());
+		return new RSTile(
+				methods.client.getDestX() + methods.client.getBaseX(),
+				methods.client.getDestY() + methods.client.getBaseY());
 	}
 
 	/**
@@ -294,7 +297,8 @@ public class Walking extends MethodProvider {
 	 * @return The offset as an RSTile.
 	 */
 	public RSTile getCollisionOffset(final int plane) {
-		final org.rsbot.client.RSGroundData data = methods.client	.getRSGroundDataArray()[plane];
+		final org.rsbot.client.RSGroundData data = methods.client
+				.getRSGroundDataArray()[plane];
 		return new RSTile(data.getX(), data.getY());
 	}
 }

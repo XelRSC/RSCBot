@@ -3,7 +3,6 @@ package org.rsbot.event.impl;
 import org.rsbot.bot.Bot;
 import org.rsbot.event.listeners.TextPaintListener;
 import org.rsbot.script.methods.Game;
-import org.rsbot.script.methods.Game.Tab;
 import org.rsbot.util.StringUtil;
 
 import java.awt.*;
@@ -18,9 +17,9 @@ public class TTab implements TextPaintListener {
 
 	@Override
 	public int drawLine(final Graphics render, int idx) {
-		final Tab cTab = game.getTab();
+		final int cTab = game.getCurrentTab();
 		StringUtil.drawLine(render, idx++,
-				"Current Tab: " + cTab.description() + " (" + cTab.index() + ")");
+				"Current Tab: " + cTab + (cTab != -1 ? " (" + Game.TAB_NAMES[cTab] + ")" : ""));
 		return idx;
 	}
 

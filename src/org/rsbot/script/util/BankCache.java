@@ -74,8 +74,11 @@ public class BankCache {
 					return;
 				}
 			}
+			final FileReader fr = new FileReader(cacheFile);
+			final BufferedReader br = new BufferedReader(fr);
 			data.clear();
-			data.putAll(IniParser.deserialise(cacheFile));
+			data.putAll(IniParser.deserialise(br));
+			br.close();
 		}
 	}
 

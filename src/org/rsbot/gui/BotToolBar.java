@@ -1,7 +1,6 @@
 package org.rsbot.gui;
 
 import org.rsbot.Configuration;
-import org.rsbot.gui.component.Messages;
 import org.rsbot.script.methods.Environment;
 
 import javax.imageio.ImageIO;
@@ -127,10 +126,6 @@ public class BotToolBar extends JToolBar {
 
 	public void setAddTabVisible(final boolean visible) {
 		addTabButton.setVisible(visible);
-	}
-
-	public void setInputButtonVisible(final boolean visible) {
-		userInputButton.setVisible(visible);
 	}
 
 	public void addTab() {

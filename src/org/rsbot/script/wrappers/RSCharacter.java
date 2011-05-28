@@ -78,7 +78,7 @@ public abstract class RSCharacter extends MethodProvider {
 	}
 
 	/**
-	 * @return The % of HP remaining
+	 * @return The % of HP
 	 */
 	public int getHPPercent() {
 		return isInCombat() ? getAccessor().getHPRatio() * 100 / 255 : 100;

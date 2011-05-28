@@ -2,7 +2,7 @@ package org.rsbot.gui;
 
 import org.rsbot.Configuration;
 import org.rsbot.script.AccountStore;
-import org.rsbot.service.DRM;
+import org.rsbot.script.provider.ScriptDeliveryNetwork;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -48,7 +48,7 @@ public class AccountManager extends JDialog implements ActionListener {
 	private static final AccountStore accountStore = new AccountStore(new File(FILE_ACCOUNT_STORAGE));
 
 	static {
-		accountStore.setPassword(DRM.getServiceKey());
+		accountStore.setPassword(ScriptDeliveryNetwork.getInstance().getKey());
 		try {
 			accountStore.load();
 		} catch (final IOException ignored) {

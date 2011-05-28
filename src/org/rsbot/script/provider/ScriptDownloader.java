@@ -1,7 +1,6 @@
 package org.rsbot.script.provider;
 
 import org.rsbot.Configuration;
-import org.rsbot.util.StringUtil;
 import org.rsbot.util.io.HttpClient;
 import org.rsbot.util.io.IOHelper;
 import org.rsbot.util.io.JavaCompiler;
@@ -74,7 +73,7 @@ public class ScriptDownloader {
 				source = source.substring(z);
 			}
 			source = source.replaceAll("\\<br\\s*\\/?\\s*\\>", "\r\n");
-			source = StringUtil.stripHtml(source);
+			source = source.replaceAll("\\<.*?\\>", "");
 			source = source.replaceAll("&nbsp;", " ");
 			source = source.replaceAll("&quot;", "\"");
 			source = source.replaceAll("&lt;", "<");

@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
  * Camera related operations.
  */
 public class Camera extends MethodProvider {
+
 	Camera(final MethodContext ctx) {
 		super(ctx);
 	}
@@ -328,4 +329,5 @@ public class Camera extends MethodProvider {
 	public int getZ() {
 		return methods.client.getCamPosZ();
 	}
+
 }

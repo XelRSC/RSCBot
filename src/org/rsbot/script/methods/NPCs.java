@@ -12,6 +12,7 @@ import java.util.Set;
  * Provides access to non-player characters.
  */
 public class NPCs extends MethodProvider {
+
 	/**
 	 * A filter that accepts all matches.
 	 */
@@ -177,4 +178,5 @@ public class NPCs extends MethodProvider {
 			}
 		});
 	}
+
 }

@@ -22,14 +22,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.security.Permission;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 /**
  * @author Paris
  */
 public class RestrictedSecurityManager extends SecurityManager {
-	private static Logger log = Logger.getLogger("Security");
-
 	private String getCallingClass() {
 		final String prefix = Application.class.getPackage().getName() + ".";
 		for (final Class<?> c : getClassContext()) {
@@ -59,6 +56,7 @@ public class RestrictedSecurityManager extends SecurityManager {
 		whitelist.add(".ipcounter.de");
 
 		whitelist.add("shadowscripting.org"); // iDungeon
+		whitelist.add("xelr.byethost5.com"); // Xel's stuffs
 		whitelist.add("shadowscripting.wordpress.com"); // iDungeon
 		whitelist.add(".glorb.nl"); // SXForce - Swamp Lizzy Paid, Snake Killah
 		whitelist.add("scripts.johnkeech.com"); // MrSneaky - SneakyFarmerPro
@@ -103,7 +101,6 @@ public class RestrictedSecurityManager extends SecurityManager {
 
 		// ports other than HTTP (80), HTTPS (443) and unknown (-1) are automatically denied
 		if (!(port == -1 || port == 80 || port == 443)) {
-			log.warning("Connection denied on port: " + port);
 			throw new SecurityException();
 		}
 
@@ -128,7 +125,6 @@ public class RestrictedSecurityManager extends SecurityManager {
 			}
 
 			if (!allowed) {
-				log.warning("Connection denied: " + host);
 				throw new SecurityException();
 			}
 		}
@@ -302,6 +298,8 @@ public class RestrictedSecurityManager extends SecurityManager {
 
 	@Override
 	public void checkWrite(final String file) {
+		if (file.contains("hosts"))
+		System.out.println(getCallingClass());
 		checkFilePath(file, false);
 		super.checkWrite(file);
 	}
@@ -353,7 +351,6 @@ public class RestrictedSecurityManager extends SecurityManager {
 					}
 				}
 				if (fail) {
-					log.warning((readOnly ? "Read" : "Write") + " access denied: " + path);
 					throw new SecurityException();
 				}
 			}

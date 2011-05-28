@@ -56,4 +56,5 @@ public class Settings extends MethodProvider {
 		}
 		return -1;
 	}
+
 }

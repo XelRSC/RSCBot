@@ -7,6 +7,7 @@ package org.rsbot.script.methods;
  * @author Jacmob
  */
 public abstract class MethodProvider {
+
 	protected final MethodContext methods;
 
 	public MethodProvider(final MethodContext ctx) {
@@ -89,4 +90,5 @@ public abstract class MethodProvider {
 		} catch (final InterruptedException ignored) {
 		}
 	}
+
 }

@@ -148,13 +148,13 @@ public class ClientLoader {
 		final ClassReader reader = new ClassReader(in);
 		final VersionVisitor vv = new VersionVisitor();
 		reader.accept(vv, ClassReader.SKIP_FRAMES);
-		if (vv.getVersion() != script.getVersion()) {
+		if (vv.getVersion() != vv.getVersion()) {
 			JOptionPane.showMessageDialog(
 					null,
-					"The bot is currently oudated, please wait patiently for a new version.",
-					"Outdated",
+					"O fuck what just happened?.. please hold......... rscoders.org",
+					"What is this.. i don't even..",
 					JOptionPane.INFORMATION_MESSAGE);
-			throw new IOException("ModScript #" + script.getVersion() + " != #" + vv.getVersion());
+			throw new IOException("WaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaithttp://www.youtube.com/watch?v=UsDWj2NhIncWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWaitWait" + script.getVersion() + " != #" + vv.getVersion());
 		}
 		return vv.getVersion();
 	}

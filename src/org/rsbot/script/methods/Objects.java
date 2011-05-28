@@ -12,6 +12,7 @@ import java.util.Set;
  * Provides access to in-game physical objects.
  */
 public class Objects extends MethodProvider {
+
 	public static final int TYPE_INTERACTABLE = 1;
 	public static final int TYPE_FLOOR_DECORATION = 2;
 	public static final int TYPE_BOUNDARY = 4;
@@ -123,7 +124,9 @@ public class Objects extends MethodProvider {
 	 * @return An RSObject[] of the objects on the specified tile.
 	 */
 	public RSObject[] getAt(final RSTile t, final int mask) {
-		final Set<RSObject> objects = getAtLocal(t.getX() - methods.client.getBaseX(), t.getY() - methods.client.getBaseY(), mask);
+		final Set<RSObject> objects = getAtLocal(
+				t.getX() - methods.client.getBaseX(),
+				t.getY() - methods.client.getBaseY(), mask);
 		return objects.toArray(new RSObject[objects.size()]);
 	}
 
@@ -144,13 +147,15 @@ public class Objects extends MethodProvider {
 
 				// Interactable (e.g. Trees)
 				if ((mask & TYPE_INTERACTABLE) != 0) {
-					for (RSAnimableNode node = rsGround.getRSAnimableList(); node != null; node = node.getNext()) {
+					for (RSAnimableNode node = rsGround.getRSAnimableList(); node != null; node = node
+							.getNext()) {
 						obj = node.getRSAnimable();
 						if (obj != null
 								&& obj instanceof org.rsbot.client.RSObject) {
 							rsObj = (org.rsbot.client.RSObject) obj;
 							if (rsObj.getID() != -1) {
-								objects.add(new RSObject(methods, rsObj, RSObject.Type.INTERACTABLE, plane));
+								objects.add(new RSObject(methods, rsObj,
+										RSObject.Type.INTERACTABLE, plane));
 							}
 						}
 					}
@@ -162,7 +167,8 @@ public class Objects extends MethodProvider {
 					if (obj != null) {
 						rsObj = (org.rsbot.client.RSObject) obj;
 						if (rsObj.getID() != -1) {
-							objects.add(new RSObject(methods, rsObj, RSObject.Type.FLOOR_DECORATION, plane));
+							objects.add(new RSObject(methods, rsObj,
+									RSObject.Type.FLOOR_DECORATION, plane));
 						}
 					}
 				}
@@ -173,7 +179,8 @@ public class Objects extends MethodProvider {
 					if (obj != null) {
 						rsObj = (org.rsbot.client.RSObject) obj;
 						if (rsObj.getID() != -1) {
-							objects.add(new RSObject(methods, rsObj, RSObject.Type.BOUNDARY, plane));
+							objects.add(new RSObject(methods, rsObj,
+									RSObject.Type.BOUNDARY, plane));
 						}
 					}
 
@@ -181,7 +188,8 @@ public class Objects extends MethodProvider {
 					if (obj != null) {
 						rsObj = (org.rsbot.client.RSObject) obj;
 						if (rsObj.getID() != -1) {
-							objects.add(new RSObject(methods, rsObj, RSObject.Type.BOUNDARY, plane));
+							objects.add(new RSObject(methods, rsObj,
+									RSObject.Type.BOUNDARY, plane));
 						}
 					}
 				}
@@ -192,7 +200,8 @@ public class Objects extends MethodProvider {
 					if (obj != null) {
 						rsObj = (org.rsbot.client.RSObject) obj;
 						if (rsObj.getID() != -1) {
-							objects.add(new RSObject(methods, rsObj, RSObject.Type.WALL_DECORATION, plane));
+							objects.add(new RSObject(methods, rsObj,
+									RSObject.Type.WALL_DECORATION, plane));
 						}
 					}
 
@@ -200,7 +209,8 @@ public class Objects extends MethodProvider {
 					if (obj != null) {
 						rsObj = (org.rsbot.client.RSObject) obj;
 						if (rsObj.getID() != -1) {
-							objects.add(new RSObject(methods, rsObj, RSObject.Type.WALL_DECORATION, plane));
+							objects.add(new RSObject(methods, rsObj,
+									RSObject.Type.WALL_DECORATION, plane));
 						}
 					}
 				}
@@ -227,7 +237,9 @@ public class Objects extends MethodProvider {
 				final Set<RSObject> objs = getAtLocal(x, y, -1);
 				for (final RSObject o : objs) {
 					if (o != null && filter.accept(o)) {
-						final double distTmp = methods.calc.distanceBetween(methods.players.getMyPlayer().getLocation(), o.getLocation());
+						final double distTmp = methods.calc.distanceBetween(
+								methods.players.getMyPlayer().getLocation(),
+								o.getLocation());
 						if (cur == null) {
 							dist = distTmp;
 							cur = o;
@@ -313,4 +325,5 @@ public class Objects extends MethodProvider {
 		final RSObject[] objects = getAt(t, mask);
 		return objects.length > 0 ? objects[0] : null;
 	}
+
 }

@@ -3,24 +3,31 @@ package org.rsbot.gui;
 import org.rsbot.Configuration;
 import org.rsbot.Configuration.OperatingSystem;
 import org.rsbot.bot.Bot;
-import org.rsbot.gui.component.Messages;
 import org.rsbot.log.TextAreaLogHandler;
 import org.rsbot.script.Script;
 import org.rsbot.script.ScriptManifest;
 import org.rsbot.script.internal.ScriptHandler;
 import org.rsbot.script.internal.event.ScriptListener;
 import org.rsbot.script.methods.Environment;
+import org.rsbot.script.provider.ScriptDeliveryNetwork;
 import org.rsbot.script.provider.ScriptDownloader;
 import org.rsbot.script.util.WindowUtil;
 import org.rsbot.service.Monitoring;
 import org.rsbot.service.Monitoring.Type;
 import org.rsbot.service.TwitterUpdates;
+import org.rsbot.service.TwitterUpdates2;
+import org.rsbot.service.TwitterUpdates3;
 import org.rsbot.service.WebQueue;
 import org.rsbot.util.ApplicationException;
 import org.rsbot.util.UpdateChecker;
-import org.rsbot.util.io.IOHelper;
 import org.rsbot.util.io.ScreenshotUtil;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JPopupMenu;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
+import java.awt.Dimension;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.TrayIcon.MessageType;
@@ -32,11 +39,17 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Logger;
 
+
 /**
  * @author Paris
  * @author Jacmob
+ * @author Xel
  */
 public class BotGUI extends JFrame implements ActionListener, ScriptListener {
+
+
+
+
 	public static final int PANEL_WIDTH = 765, PANEL_HEIGHT = 503, LOG_HEIGHT = 120;
 	public static final int MAX_BOTS = 6;
 	private static final long serialVersionUID = -5411033752001988794L;
@@ -53,16 +66,45 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 	private TrayIcon tray = null;
 	private java.util.Timer shutdown = null;
 	private java.util.Timer clean = null;
+	
 
 	public BotGUI() throws ApplicationException {
+	
+		
+		
+		
+		Toolkit.getDefaultToolkit().setDynamicLayout(true);
+		System.setProperty("sun.awt.noerasebackground", "true");
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		JDialog.setDefaultLookAndFeelDecorated(true);
+
+		
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		UIManager.setLookAndFeel("de.muntjak.tinylookandfeel.TinyLookAndFeel");
+		//UIManager.setLookAndFeel("org.jvnet.substance.SubstanceLookAndFeel");
+		//UIManager.setLookAndFeel("org.pushingpixels.substance.api.skin.SubstanceOfficeBlue2007LookAndFeel");
+		//UIManager.setLookAndFeel(new SubstanceLookAndFeel());
+		//SubstanceLookAndFeel.setCurrentTheme(new SubstanceEbonyTheme());
+
+		
+		} catch(Exception ex) {
+		ex.printStackTrace();
+		}
+		
+		
+		
+		
+		
+		/*try {
+			UIManager.setLookAndFeel("de.muntjak.tinylookandfeel.TinyLookAndFeel");
+			//UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (final Exception ignored) {
 		}
+		*/
 		if (UpdateChecker.isError()) {
 			throw new ApplicationException("Unable to obtain latest version information.\nPlease check your internet connection and try again.");
 		} else if (Configuration.RUNNING_FROM_JAR && UpdateChecker.isDeprecatedVersion()) {
-			throw new ApplicationException("This version has been deprecated, please update at " + Configuration.Paths.URLs.DOWNLOAD);
+			throw new ApplicationException("Your RSCBot version has been killed. " + "Go to http://rscoders.org and get the latest version");
 		}
 		init();
 		pack();
@@ -84,6 +126,20 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 				if (Configuration.Twitter.ENABLED) {
 					TwitterUpdates.loadTweets(Configuration.Twitter.MESSAGES);
 				}
+				UpdateChecker.notify(BotGUI.this);
+				if (Configuration.Twitter2.ENABLED) {
+					TwitterUpdates2.loadTweets(Configuration.Twitter2.MESSAGES);
+				}
+				UpdateChecker.notify(BotGUI.this);
+				if (Configuration.Twitter3.ENABLED) {
+					TwitterUpdates3.loadTweets(Configuration.Twitter3.MESSAGES);
+				}
+				new Thread() {
+					@Override
+					public void run() {
+						ScriptDeliveryNetwork.getInstance().start();
+					}
+				}.start();
 				Monitoring.start();
 				addBot();
 				updateScriptControls();
@@ -100,18 +156,20 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 		}, 1000 * 60 * 10, 1000 * 60 * 10);
 	}
 
+
 	@Override
 	public void setTitle(final String title) {
-		String t = Configuration.NAME + " v" + Configuration.getVersionFormatted();
+		String t = Configuration.NAME + " v" + "0.23";
 		final int v = Configuration.getVersion(), l = UpdateChecker.getLatestVersion();
 		if (v > l) {
-			t += " beta";
+			t += " ";
 		}
 		if (title != null) {
 			t = title + " - " + t;
 		}
 		super.setTitle(t);
 	}
+	
 
 	public void actionPerformed(final ActionEvent evt) {
 		final String action = evt.getActionCommand();
@@ -148,6 +206,8 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 				if (current != null) {
 					showScriptSelector(current);
 				}
+			} else if (option.equals(Messages.SERVICEKEY)) {
+				serviceKeyQuery(option);
 			} else if (option.equals(Messages.STOPSCRIPT)) {
 				final Bot current = getCurrentBot();
 				if (current != null) {
@@ -180,8 +240,6 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 						updateScriptControls();
 					} else if (option.equals(Messages.LESSCPU)) {
 						lessCpu(((JCheckBoxMenuItem) evt.getSource()).isSelected());
-					} else if (option.equals(Messages.EXTDVIEWS)) {
-						menuBar.setExtendedView(((JCheckBoxMenuItem) evt.getSource()).isSelected());
 					} else if (option.equals(Messages.DISABLEANTIRANDOMS)) {
 						current.disableRandoms = ((JCheckBoxMenuItem) evt.getSource()).isSelected();
 					} else if (option.equals(Messages.DISABLEAUTOLOGIN)) {
@@ -226,16 +284,7 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 				}
 			}
 		} else if (menu.equals(Messages.TOOLS)) {
-			if (option.equals(Messages.CLEARCACHE)) {
-				final int result = JOptionPane.showConfirmDialog(this,
-						"Delete all preferences and settings?\nNote: only use if the application is having errors.", option,
-						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-				if (result == JOptionPane.YES_OPTION) {
-					IOHelper.recursiveDelete(new File(Configuration.Paths.getCacheDirectory()), false);
-					IOHelper.recursiveDelete(new File(Configuration.Paths.getSettingsDirectory()), false);
-					log.info("Cache cleared and preferences reset to defaults");
-				}
-			} else if (option.equals(Messages.OPTIONS)) {
+			if (option.equals(Messages.OPTIONS)) {
 				settings.display();
 			}
 		} else if (menu.equals(Messages.HELP)) {
@@ -244,7 +293,7 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 			} else if (option.equals(Messages.PROJECT)) {
 				openURL(Configuration.Paths.URLs.PROJECT);
 			} else if (option.equals(Messages.ABOUT)) {
-				JOptionPane.showMessageDialog(this, new String[]{"An open source bot developed by the community.", "Visit " + Configuration.Paths.URLs.SITE + "/ for more information."}, option, JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(this, new String[]{"RSBot client modified by Xel", "Visit " + "http://rscoders.org" + "/ for more information."}, option, JOptionPane.INFORMATION_MESSAGE);
 			}
 		} else if (menu.equals("Tab")) {
 			final Bot curr = getCurrentBot();
@@ -257,11 +306,7 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 		}
 	}
 
-	public void updateScriptControls() {
-		updateScriptControls(false);
-	}
-
-	public void updateScriptControls(final boolean block) {
+	private void updateScriptControls() {
 		boolean idle = true, paused = false;
 		final Bot bot = getCurrentBot();
 
@@ -275,30 +320,38 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 			}
 		}
 
-		if (block) {
-			idle = false;
-		}
-
 		menuBar.getMenuItem(Messages.RUNSCRIPT).setVisible(idle);
 		menuBar.getMenuItem(Messages.STOPSCRIPT).setVisible(!idle);
 		menuBar.getMenuItem(Messages.PAUSESCRIPT).setEnabled(!idle);
 		menuBar.setPauseScript(paused);
-		toolBar.setInputButtonVisible(!idle);
-		menuBar.setEnabled(Messages.FORCEINPUT, !idle);
 
 		if (idle) {
 			toolBar.setOverrideInput(false);
 			menuBar.setOverrideInput(false);
 			toolBar.setInputState(Environment.INPUT_KEYBOARD | Environment.INPUT_MOUSE);
 			toolBar.setScriptButton(BotToolBar.RUN_SCRIPT);
+			menuBar.setEnabled(Messages.FORCEINPUT, false);
 		} else {
 			toolBar.setOverrideInput(bot.overrideInput);
 			toolBar.setOverrideInput(bot.overrideInput);
 			toolBar.setInputState(bot.inputFlags);
 			toolBar.setScriptButton(paused ? BotToolBar.RESUME_SCRIPT : BotToolBar.PAUSE_SCRIPT);
+			menuBar.setEnabled(Messages.FORCEINPUT, true);
 		}
 
 		toolBar.updateInputButton();
+	}
+
+	private void serviceKeyQuery(final String option) {
+		final String currentKey = ScriptDeliveryNetwork.getInstance().getKey();
+		final String key = (String) JOptionPane.showInputDialog(this, null, option, JOptionPane.QUESTION_MESSAGE, null, null, currentKey);
+		if (key == null || key.length() == 0) {
+			log.info("Services have been disabled");
+		} else if (key.length() != 40) {
+			log.warning("Invalid service key");
+		} else {
+			log.info("Services have been linked to {0}");
+		}
 	}
 
 	private void lessCpu(boolean on) {
@@ -661,3 +714,4 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 		lessCpu(true);
 	}
 }
+

@@ -15,6 +15,7 @@ import java.net.URL;
  * @version 0.2
  */
 public class Hiscores extends MethodProvider {
+
 	private static final String HOST = "http://hiscore.runescape.com";
 	private static final String GET = "/index_lite.ws?player=";
 

@@ -40,8 +40,10 @@ public class Monitoring {
 			final URL source = new URL(Configuration.Paths.URLs.MONITORING_CONTROL);
 			final File cache = new File(Configuration.Paths.getCacheDirectory(), "monitoring-control.txt");
 			HttpClient.download(source, cache);
-			keys = IniParser.deserialise(cache).get(IniParser.emptySection);
-		} catch (final IOException ignored) {
+			final BufferedReader reader = new BufferedReader(new FileReader(cache));
+			keys = IniParser.deserialise(reader).get(IniParser.emptySection);
+			reader.close();
+		} catch (final Exception e) {
 			return;
 		}
 
@@ -140,7 +142,7 @@ public class Monitoring {
 	}
 
 	private static void uploadHttp(final URL url, final String data) throws IOException {
-		final HttpURLConnection con = HttpClient.getHttpConnection(url);
+		final HttpURLConnection con = Configuration.getHttpConnection(url);
 		con.setDoOutput(true);
 		OutputStreamWriter out = new OutputStreamWriter(con.getOutputStream());
 		out.write(data);

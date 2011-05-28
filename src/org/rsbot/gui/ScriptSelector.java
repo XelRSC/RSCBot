@@ -2,7 +2,6 @@ package org.rsbot.gui;
 
 import org.rsbot.Configuration;
 import org.rsbot.bot.Bot;
-import org.rsbot.gui.component.JComboCheckBox;
 import org.rsbot.script.Script;
 import org.rsbot.script.internal.ScriptHandler;
 import org.rsbot.script.internal.event.ScriptListener;
@@ -16,13 +15,10 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumn;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -33,17 +29,15 @@ import java.util.logging.Logger;
 public class ScriptSelector extends JDialog implements ScriptListener {
 	private static final long serialVersionUID = 5475451138208522511L;
 	private static final Logger log = Logger.getLogger(ScriptSelector.class.getName());
-	private static final String[] COLUMN_NAMES = new String[]{"", "Name", "Description"};
+	private static final String[] COLUMN_NAMES = new String[]{"", "Name", "Version", "Author", "Description"};
 
 	private static final ScriptSource SRC_SOURCES;
 	private static final ScriptSource SRC_PRECOMPILED;
-	private static final ScriptSource SRC_NETWORK;
-	private final BotGUI frame;
+	private static final ScriptSource SRC_DRM;
 	private final Bot bot;
 	private JTable table;
 	private JTextField search;
 	private JComboBox accounts;
-	private final JComboCheckBox categories = new JComboCheckBox();
 	private final ScriptTableModel model;
 	private final List<ScriptDefinition> scripts;
 	private JButton submit;
@@ -52,12 +46,11 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 	static {
 		SRC_SOURCES = new FileScriptSource(new File(Configuration.Paths.getScriptsSourcesDirectory()));
 		SRC_PRECOMPILED = new FileScriptSource(new File(Configuration.Paths.getScriptsPrecompiledDirectory()));
-		SRC_NETWORK = ScriptDeliveryNetwork.getInstance();
+		SRC_DRM = ScriptDeliveryNetwork.getInstance();
 	}
 
-	public ScriptSelector(final BotGUI frame, final Bot bot) {
+	public ScriptSelector(final Frame frame, final Bot bot) {
 		super(frame, "Script Selector", true);
-		this.frame = frame;
 		this.bot = bot;
 		scripts = new ArrayList<ScriptDefinition>();
 		model = new ScriptTableModel(scripts);
@@ -82,31 +75,11 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 	private void load() {
 		scripts.clear();
 		if (connected) {
-			final List<ScriptDefinition> net = SRC_NETWORK.list();
-			if (net != null) {
-				scripts.addAll(net);
-			}
+			scripts.addAll(SRC_DRM.list());
 		}
 		scripts.addAll(SRC_PRECOMPILED.list());
 		scripts.addAll(SRC_SOURCES.list());
-		Collections.sort(scripts);
-
-		final ArrayList<String> keywords = new ArrayList<String>(scripts.size());
-		for (final ScriptDefinition def : scripts) {
-			if (def.keywords == null || def.keywords.length == 0) {
-				continue;
-			}
-			for (String keyword : def.keywords) {
-				keyword = keyword.toLowerCase().trim();
-				if (keyword.length() > 0 && !keywords.contains(keyword)) {
-					keywords.add(keyword);
-				}
-			}
-		}
-		Collections.sort(keywords);
-		categories.populate(keywords, false);
-
-		filter();
+		model.search((search == null || search.getText().contains("\0")) ? "" : search.getText());
 		table.revalidate();
 	}
 
@@ -126,14 +99,16 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 		final JButton refresh = new JButton(new ImageIcon(Configuration.getImage(Configuration.Paths.Resources.ICON_REFRESH)));
 		refresh.setToolTipText("Refresh");
 		refresh.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				refresh.setEnabled(false);
 				SwingUtilities.invokeLater(new Runnable() {
+					@Override
 					public void run() {
 						new Thread() {
 							@Override
 							public void run() {
-								ScriptDeliveryNetwork.getInstance().refresh(true);
+								ScriptDeliveryNetwork.getInstance().forceUpdate();
 								load();
 								refresh.setEnabled(true);
 							}
@@ -149,7 +124,21 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 			public String getToolTipText(MouseEvent e) {
 				int row = rowAtPoint(e.getPoint());
 				ScriptDefinition def = model.getDefinition(row);
-				return def.toString();
+				if (def != null) {
+					StringBuilder b = new StringBuilder();
+					b.append(def.name);
+					b.append(" v");
+					b.append(def.version);
+					b.append(" by ");
+					for (int i = 0; i < def.authors.length; i++) {
+						if (i > 0) {
+							b.append(i == def.authors.length - 1 ? " and " : ", ");
+						}
+						b.append(def.authors[i]);
+					}
+					return b.toString();
+				}
+				return super.getToolTipText(e);
 			}
 		};
 		table.addMouseListener(new MouseAdapter() {
@@ -218,7 +207,7 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 		table.setShowGrid(false);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getSelectionModel().addListSelectionListener(new TableSelectionListener());
-		setColumnWidths(table, 30, 200);
+		setColumnWidths(table, 30, 175, 55, 95);
 		final JToolBar toolBar = new JToolBar();
 		toolBar.setMargin(new Insets(1, 1, 1, 1));
 		toolBar.setFloatable(false);
@@ -248,10 +237,9 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 		search.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(final KeyEvent e) {
-				filter();
+				model.search(search.getText());
 				table.revalidate();
 			}
-
 			@Override
 			public void keyReleased(final KeyEvent e) {
 				keyTyped(e);
@@ -266,29 +254,17 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 		submit.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent evt) {
 				final ScriptDefinition def = model.getDefinition(table.getSelectedRow());
-				setVisible(false);
-				final String account = (String) accounts.getSelectedItem();
-				bot.getScriptHandler().removeScriptListener(ScriptSelector.this);
-				dispose();
-				new Thread() {
-					@Override
-					public void run() {
-						Script script = null;
-						frame.updateScriptControls(true);
-						try {
-							script = def.source.load(def);
-						} catch (final ServiceException e) {
-							log.severe(e.getMessage());
-						}
-						if (script != null) {
-							bot.setAccount(account);
-							bot.getScriptHandler().runScript(script);
-							frame.updateScriptControls();
-						}
-					}
-				}.start();
+				try {
+					bot.setAccount((String) accounts.getSelectedItem());
+					bot.getScriptHandler().runScript(def.source.load(def));
+					bot.getScriptHandler().removeScriptListener(ScriptSelector.this);
+					dispose();
+				} catch (final ServiceException e) {
+					e.printStackTrace();
+				}
 			}
 		});
+		connect.setEnabled(Configuration.SCRIPT_DRM ? true : false);
 		if (connect.isEnabled()) {
 			final ActionListener listenConnect = new ActionListener() {
 				public void actionPerformed(final ActionEvent e) {
@@ -303,38 +279,8 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 			connect.addActionListener(listenConnect);
 		}
 		accounts = new JComboBox(AccountManager.getAccountNames());
-		accounts.setPreferredSize(new Dimension(125, 20));
-		categories.setPreferredSize(new Dimension(150, 20));
-		categories.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent arg0) {
-				final String[] selected = categories.getSelectedItems();
-				final StringBuilder s = new StringBuilder(16);
-				switch (selected.length) {
-				case 0:
-					s.append("Showing all");
-					break;
-				case 1:
-					s.append(selected[0]);
-					break;
-				case 2:
-					s.append(selected[0]);
-					s.append(" & ");
-					s.append(selected[1]);
-					break;
-				default:
-					s.append("Showing ");
-					s.append(selected.length);
-					s.append(" types");
-					break;
-				}
-				categories.setText(s.toString());
-				filter();
-			}
-		});
+		accounts.setPreferredSize(new Dimension(200, 20));
 		toolBar.add(search);
-		toolBar.add(Box.createHorizontalStrut(5));
-		toolBar.add(categories);
 		toolBar.add(Box.createHorizontalStrut(5));
 		toolBar.add(accounts);
 		toolBar.add(Box.createHorizontalStrut(5));
@@ -356,16 +302,11 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 		search.requestFocus();
 	}
 
-	private void filter() {
-		model.search((search == null || search.getText().contains("\0")) ? "" : search.getText(), categories.getSelectedItems());
-	}
-
 	private void setColumnWidths(final JTable table, final int... widths) {
 		for (int i = 0; i < widths.length; ++i) {
-			final TableColumn col = table.getColumnModel().getColumn(i);
-			col.setPreferredWidth(widths[i]);
-			col.setMinWidth(widths[i]);
-			col.setMaxWidth(widths[i]);
+			table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
+			table.getColumnModel().getColumn(i).setMinWidth(widths[i]);
+			table.getColumnModel().getColumn(i).setMaxWidth(widths[i]);
 		}
 	}
 
@@ -400,7 +341,7 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 				Configuration.getImage(Configuration.Paths.Resources.ICON_SCRIPT_EDIT));
 		public static final ImageIcon ICON_SCRIPT_PRE = new ImageIcon(
 				Configuration.getImage(Configuration.Paths.Resources.ICON_SCRIPT_GEAR));
-		public static final ImageIcon ICON_SCRIPT_NET = new ImageIcon(
+		public static final ImageIcon ICON_SCRIPT_DRM = new ImageIcon(
 				Configuration.getImage(Configuration.Paths.Resources.ICON_SCRIPT_LIVE));
 		private final List<ScriptDefinition> scripts;
 		private final List<ScriptDefinition> matches;
@@ -410,25 +351,24 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 			matches = new ArrayList<ScriptDefinition>();
 		}
 
-		public void search(final String find, final String[] keys) {
+		public void search(String substr) {
 			matches.clear();
-			for (final ScriptDefinition def : scripts) {
-				if (find.length() != 0 && !def.name.toLowerCase().contains(find)) {
-					continue;
-				}
-				final ArrayList<String> list = new ArrayList<String>(def.keywords.length);
-				for (final String key : def.keywords) {
-					list.add(key.toLowerCase());
-				}
-				boolean hit = true;
-				for (final String key : keys) {
-					if (!list.contains(key)) {
-						hit = false;
-						break;
+			substr = substr.trim();
+			if (substr.isEmpty()) {
+				matches.addAll(scripts);
+			} else {
+				substr = substr.toLowerCase();
+				for (final ScriptDefinition def : scripts) {
+					if (def.name.toLowerCase().contains(substr)) {
+						matches.add(def);
+					} else {
+						for (final String keyword : def.keywords) {
+							if (keyword.toLowerCase().contains(substr)) {
+								matches.add(def);
+								break;
+							}
+						}
 					}
-				}
-				if (hit) {
-					matches.add(def);
 				}
 			}
 			fireTableDataChanged();
@@ -449,19 +389,30 @@ public class ScriptSelector extends JDialog implements ScriptListener {
 		public Object getValueAt(final int rowIndex, final int columnIndex) {
 			if (rowIndex >= 0 && rowIndex < matches.size()) {
 				final ScriptDefinition def = matches.get(rowIndex);
-				switch (columnIndex) {
-				case 0:
+				if (columnIndex == 0) {
 					if (def.source == SRC_SOURCES) {
 						return ICON_SCRIPT_SRC;
 					}
 					if (def.source == SRC_PRECOMPILED) {
 						return ICON_SCRIPT_PRE;
 					}
-					return ICON_SCRIPT_NET;
-				case 1:
-					return def.getName();
-				case 2:
-					return def.getDescription();
+					return ICON_SCRIPT_DRM;
+				}
+				if (columnIndex == 1) {
+					return def.name;
+				}
+				if (columnIndex == 2) {
+					return def.version;
+				}
+				if (columnIndex == 3) {
+					final StringBuilder b = new StringBuilder();
+					for (final String author : def.authors) {
+						b.append(author).append(", ");
+					}
+					return b.replace(b.length() - 2, b.length(), "");
+				}
+				if (columnIndex == 4) {
+					return def.description;
 				}
 			}
 			return null;

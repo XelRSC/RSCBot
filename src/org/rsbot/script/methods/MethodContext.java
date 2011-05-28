@@ -11,6 +11,7 @@ import org.rsbot.script.internal.reflection.Reflection;
  * @author Jacmob
  */
 public class MethodContext {
+
 	/**
 	 * The instance of {@link java.util.Random} for random number generation.
 	 */
@@ -214,4 +215,5 @@ public class MethodContext {
 		client = bot.getClient();
 		inputManager = bot.getInputManager();
 	}
+
 }

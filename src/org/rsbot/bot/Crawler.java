@@ -1,8 +1,9 @@
 package org.rsbot.bot;
 
-import org.rsbot.util.io.HttpClient;
+import org.rsbot.Configuration;
 
-import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -49,15 +50,22 @@ class Crawler {
 
 	private String downloadPage(final String url, final String referer) {
 		try {
-			final HttpURLConnection con = HttpClient.getHttpConnection(new URL(url));
+			final HttpURLConnection con = Configuration.getHttpConnection(new URL(url));
 			if (referer != null && !referer.isEmpty()) {
 				con.addRequestProperty("Referer", referer);
 			}
-			return HttpClient.downloadAsString(con);
-		} catch (final IOException e) {
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			final StringBuilder buf = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				buf.append(line);
+			}
+			reader.close();
+			return buf.toString();
+		} catch (final Exception e) {
 			e.printStackTrace();
-			return "";
 		}
+		return null;
 	}
 
 	private String firstMatch(final String regex, final String str) {

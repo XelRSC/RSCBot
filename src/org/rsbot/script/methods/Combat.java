@@ -42,6 +42,32 @@ public class Combat extends MethodProvider {
 	}
 
 	/**
+	 * Turns auto-retaliate on or off in the combat tab.
+	 *
+	 * @param enable <tt>true</tt> to enable; <tt>false</tt> to disable.
+	 */
+	public void setAutoRetaliate(final boolean enable) {
+		final RSComponent autoRetal = methods.interfaces.getComponent(884, 15);
+		if (isAutoRetaliateEnabled() != enable) {
+			if (methods.game.getCurrentTab() != Game.TAB_ATTACK) {
+				methods.game.openTab(Game.TAB_ATTACK);
+			}
+			if (methods.game.getCurrentTab() == Game.TAB_ATTACK && autoRetal != null) {
+				autoRetal.doClick();
+			}
+		}
+	}
+
+	/**
+	 * Returns whether or not the auto-retaliate option is enabled.
+	 *
+	 * @return <tt>true</tt> if retaliate is enabled; otherwise <tt>false</tt>.
+	 */
+	public boolean isAutoRetaliateEnabled() {
+		return methods.settings.getSetting(Settings.SETTING_AUTO_RETALIATE) == 0;
+	}
+
+	/**
 	 * Gets the attack mode.
 	 *
 	 * @return The current fight mode setting.
@@ -51,48 +77,30 @@ public class Combat extends MethodProvider {
 	}
 
 	/**
-     * Gets the current player's health as a percentage of full health.
-     *
-     * @return The current percentage health remaining.
-     */
-    public int getHealth() {
-    	return getLifePoints() * 10 / methods.skills.getRealLevel(Skills.CONSTITUTION);
-    }
-
-	/**
-     * Gets the current player's life points.
-     *
-     * @return The current life points if the interface is valid; otherwise 0.
-     */
-    public int getLifePoints() {
-    	try {
-    		return Integer.parseInt(methods.interfaces.get(748).getComponent(8).getText());
-    	} catch (final NumberFormatException ex) {
-    		return 0;
-    	}
-    }
-
-	/**
-     * Gets the current player's prayer points.
-     *
-     * @return The current prayer points if the interface is valid; otherwise 0.
-     */
-    public int getPrayerPoints() {
-    	try {
-    		return Integer.parseInt(methods.interfaces.get(Game.INTERFACE_PRAYER_ORB).getComponent(4).getText().trim());
-    	} catch (final NumberFormatException ex) {
-    		return 0;
-    	}
-    }
-
-	/**
-     * Gets the special bar energy amount.
-     *
-     * @return The current spec energy.
-     */
-    public int getSpecialBarEnergy() {
-    	return methods.settings.getSetting(300) / 10;
-    }
+	 * Sets the attack mode.
+	 *
+	 * @param fightMode The fight mode to set it to. From 0-3 corresponding to the 4
+	 *                  attacking modes; Else if there is only 3 attacking modes then,
+	 *                  from 0-2 corresponding to the 3 attacking modes
+	 * @return <tt>true</tt> if the interface was clicked; otherwise
+	 *         <tt>false</tt>.
+	 * @see #getFightMode()
+	 */
+	public boolean setFightMode(final int fightMode) {
+		if (fightMode != getFightMode()) {
+			methods.game.openTab(Game.TAB_ATTACK);
+			if (fightMode == 0) {
+				return methods.interfaces.getComponent(884, 11).doClick();
+			} else if (fightMode == 1) {
+				return methods.interfaces.getComponent(884, 12).doClick();
+			} else if (fightMode == 2 || fightMode == 3 && methods.interfaces.getComponent(884, 14).getActions() == null) {
+				return methods.interfaces.getComponent(884, 13).doClick();
+			} else if (fightMode == 3) {
+				return methods.interfaces.getComponent(884, 14).doClick();
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Gets the current Wilderness Level. Written by Speed.
@@ -104,24 +112,17 @@ public class Combat extends MethodProvider {
 	}
 
 	/**
-     * Checks if your character is interacting with an Npc.
-     *
-     * @param npc The Npc we want to fight.
-     * @return <tt>true</tt> if interacting; otherwise <tt>false</tt>.
-     */
-    public boolean isAttacking(final RSNPC npc) {
-    	final RSCharacter interact = methods.players.getMyPlayer().getInteracting();
-    	return interact != null && interact.equals(npc);
-    }
-
-	/**
-     * Returns whether or not the auto-retaliate option is enabled.
-     *
-     * @return <tt>true</tt> if retaliate is enabled; otherwise <tt>false</tt>.
-     */
-    public boolean isAutoRetaliateEnabled() {
-    	return methods.settings.getSetting(Settings.SETTING_AUTO_RETALIATE) == 0;
-    }
+	 * Gets the current player's life points.
+	 *
+	 * @return The current life points if the interface is valid; otherwise 0.
+	 */
+	public int getLifePoints() {
+		try {
+			return Integer.parseInt(methods.interfaces.get(748).getComponent(8).getText());
+		} catch (final NumberFormatException ex) {
+			return 0;
+		}
+	}
 
 	/**
 	 * Returns whether or not we're poisoned.
@@ -142,59 +143,44 @@ public class Combat extends MethodProvider {
 	}
 
 	/**
-     * Turns auto-retaliate on or off in the combat tab.
-     *
-     * @param enable <tt>true</tt> to enable; <tt>false</tt> to disable.
-     */
-    public void setAutoRetaliate(final boolean enable) {
-    	if (isAutoRetaliateEnabled() != enable && methods.game.openTab(Game.Tab.ATTACK)) {
-        	final RSComponent autoRetal = methods.interfaces.getComponent(884, 15);    		
-    		if (autoRetal != null) {
-    			autoRetal.doClick();
-    		}
-    	}
-    }
-
-	/**
-     * Sets the attack mode.
-     *
-     * @param fightMode The fight mode to set it to. From 0-3 corresponding to the 4
-     *                  attacking modes; Else if there is only 3 attacking modes then,
-     *                  from 0-2 corresponding to the 3 attacking modes
-     * @return <tt>true</tt> if the interface was clicked; otherwise
-     *         <tt>false</tt>.
-     * @see #getFightMode()
-     */
-    public boolean setFightMode(final int fightMode) {
-    	if (fightMode != getFightMode()) {
-    		methods.game.openTab(Game.Tab.ATTACK);
-    		if (fightMode == 0) {
-    			return methods.interfaces.getComponent(884, 11).doClick();
-    		} else if (fightMode == 1) {
-    			return methods.interfaces.getComponent(884, 12).doClick();
-    		} else if (fightMode == 2 || fightMode == 3 && methods.interfaces.getComponent(884, 14).getActions() == null) {
-    			return methods.interfaces.getComponent(884, 13).doClick();
-    		} else if (fightMode == 3) {
-    			return methods.interfaces.getComponent(884, 14).doClick();
-    		}
-    	}
-    	return false;
-    }
-
-	/**
-	 * Sets the special attack option on or off.
+	 * Gets the special bar energy amount.
 	 *
-	 * @param enabled <tt>true</tt> enable; <tt>false</tt> to disable.
-	 * @return <tt>true</tt> if the special bar was clicked; otherwise <tt>false</tt>.
+	 * @return The current spec energy.
 	 */
-	public boolean setSpecialAttack(final boolean enabled) {
-		if (isSpecialEnabled() != enabled) {
-			methods.game.openTab(Game.Tab.ATTACK);
-			final RSComponent specBar = methods.interfaces.getComponent(884, 4);
-			if (specBar != null && isSpecialEnabled() != enabled) {
-				return specBar.doClick();
-			}
+	public int getSpecialBarEnergy() {
+		return methods.settings.getSetting(300) / 10;
+	}
+
+	/**
+	 * Gets the current player's prayer points.
+	 *
+	 * @return The current prayer points if the interface is valid; otherwise 0.
+	 */
+	public int getPrayerPoints() {
+		try {
+			return Integer.parseInt(methods.interfaces.get(Game.INTERFACE_PRAYER_ORB).getComponent(4).getText().trim());
+		} catch (final NumberFormatException ex) {
+			return 0;
 		}
-		return false;
+	}
+
+	/**
+	 * Gets the current player's health as a percentage of full health.
+	 *
+	 * @return The current percentage health remaining.
+	 */
+	public int getHealth() {
+		return getLifePoints() * 10 / methods.skills.getRealLevel(Skills.CONSTITUTION);
+	}
+
+	/**
+	 * Checks if your character is interacting with an Npc.
+	 *
+	 * @param npc The Npc we want to fight.
+	 * @return <tt>true</tt> if interacting; otherwise <tt>false</tt>.
+	 */
+	public boolean isAttacking(final RSNPC npc) {
+		final RSCharacter interact = methods.players.getMyPlayer().getInteracting();
+		return interact != null && interact.equals(npc);
 	}
 }

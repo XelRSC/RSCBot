@@ -70,7 +70,11 @@ public class TeleportRunes extends Teleport {
 	}
 
 	public boolean perform() {
-		if (hasRunes() && methods.game.openTab(Game.Tab.MAGIC)) {
+		if (hasRunes()) {
+			if (methods.game.getCurrentTab() != Game.TAB_MAGIC) {
+				methods.game.openTab(Game.TAB_MAGIC);
+				sleep(500);
+			}
 			if (methods.magic.castSpell(spell)) {
 				final long t = System.currentTimeMillis();
 				while (System.currentTimeMillis() - t < 10000) {

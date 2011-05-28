@@ -10,6 +10,7 @@ import java.util.Set;
  * Player related operations.
  */
 public class Players extends MethodProvider {
+
 	/**
 	 * A filter that accepts all matches.
 	 */
@@ -126,4 +127,5 @@ public class Players extends MethodProvider {
 			}
 		});
 	}
+
 }
