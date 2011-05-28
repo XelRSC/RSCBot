@@ -55,9 +55,14 @@ public class BotGUI extends JFrame implements ActionListener, ScriptListener {
 	private java.util.Timer clean = null;
 
 	public BotGUI() throws ApplicationException {
+		Toolkit.getDefaultToolkit().setDynamicLayout(true);
+		System.setProperty("sun.awt.noerasebackground", "true");
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		JDialog.setDefaultLookAndFeelDecorated(true);
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (final Exception ignored) {
+			UIManager.setLookAndFeel("de.muntjak.tinylookandfeel.TinyLookAndFeel");
+		} catch(Exception ex) {
+		ex.printStackTrace();
 		}
 		if (UpdateChecker.isError()) {
 			throw new ApplicationException("Unable to obtain latest version information.\nPlease check your internet connection and try again.");
